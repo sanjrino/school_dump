@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>mine_sweeper</title>
+</head>
+<body>
+
+	<div class="screen_div">
+	
+		<div  id="title_div">
+.##.....##.####.########..##.....##..######......######..##......##..#######...#######..########..########.########.
+.##.....##..##..##.....##.##.....##.##....##....##....##.##..##..##.##.....##.##.....##.##.....##.##.......##.....##
+.##.....##..##..##.....##.##.....##.##..........##.......##..##..##........##........##.##.....##.##.......##.....##
+.##.....##..##..########..##.....##..######......######..##..##..##..#######...#######..########..######...########.
+..##...##...##..##...##...##.....##.......##..........##.##..##..##........##........##.##........##.......##...##..
+...##.##....##..##....##..##.....##.##....##....##....##.##..##..##.##.....##.##.....##.##........##.......##....##.
+....###....####.##.....##..#######...######......######...###..###...#######...#######..##........########.##.....##
+		</div>
+
+
+		<div id="buttons">
+			<button id="instructions_button" onclick="show_instructions()">instructions</button>
+			<button id="start_game" onclick="start_game()">start_game</button>
+      <a href="HW_2_main_page.html">
+        <button>main_page</button>
+      </a>
+      <div id="timer_div"></div>
+
+
+		</div>
+
+		<div id="instructions_div">
+		</div>
+
+		<div id="game_table" class="game_table"></div>
+		
+
+		<div id="win_screen" class="end_screens">
+
+			<br>
+			<button class="back_to_game" onclick="location.reload();">play again</button>
+		</div>
+
+
+		<div id="lose_screen" class="end_screens">
+
+			<br>
+			<button class="back_to_game" onclick="location.reload();">retry</button>
+		</div>
+
+		
+	</div>
+
+</body>
+</html>
+<style type="text/css">
+
+
+  #timer_div{
+    margin: 1em 0em ;
+
+  }
+
+	
+	button {
+		background-color: #3333ff;
+		border: 1px solid red;
+		box-shadow: 4px 4px red, 8px 8px blue;
+		color: red;
+		padding: 1em 1em;
+		text-align: center;
+		font-size: 1em;
+		margin: 4px 2px;
+		transition: background-color 1s ease-out 10ms;
+		border-radius: 30%;
+		margin-top: 2em;
+		margin-left: 2em;
+		
+	}
+	button:hover {
+		background-color: #33ff33;
+
+	}
+	
+	 body {
+      background-color: black;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      animation-name: starwars_style_intro;
+      animation-duration: 2s;
+
+    }
+
+    .game_cell {
+    	color: #000000;
+    	font-weight: bold;
+      aspect-ratio: 1;
+      height: 2em;
+      width: 2em;
+      background-color: #00ff00;
+      border: 1.5px solid red;
+      transition: background-color 0.5s ease-out 10ms;
+      box-shadow: 8px 8px blue;
+      text-align: center;
+
+    }
+
+    .game_cell:hover {
+      background-color: #cc0000;
+      animation-name: RtBtR;
+      animation-iteration-count: infinite;
+      animation-duration: 3s;
+    }
+
+    @keyframes RtBtR {
+    	0%{background-color: #cc0000}
+    	50%{background-color: #0000cc}
+    }
+
+    .game_table {
+    display: grid;
+    grid-template-columns: repeat(16, 0fr);
+	}
+
+    #t {
+      height: 2em;
+      width: 2em;
+      background: red;
+      border: red;
+    }
+    #title_div{
+    	text-shadow: 4px 4px red,8px 8px blue;
+    	
+    	
+    }
+    #instructions_div{
+    	text-shadow: 2px 2px red;
+    	padding: 1em;
+    }
+    #lose_screen{
+    	color: red;
+    	
+    }
+    #win_screen{
+    	color: #3333ff;
+    	
+    }
+
+    @keyframes starwars_style_intro{
+    0%{scale: 0.1}
+    100%{scale: 1}
+   }
+
+
+</style>
+<script type="text/javascript">
+//temporary measures
+	document.getElementById("lose_screen").innerHTML = ""
+	document.getElementById("win_screen").innerHTML = ""
+
+
+//instructions in div generator ----------------------------------------------------
+	let instruction_counter = 0;
+
+	function show_instructions(){
+		instruction_counter +=1;
+		if (instruction_counter%2  == 1) {
+			document.getElementById("instructions_div").innerHTML = '<h2>Instructions</h2>\
+					<ul>\
+						<li>Welcome to v1ru5_sw33p3r, the ultimate Minesweeper experience for hackers.</li>\
+						<li>To win you have to flag all of the present malware infected cells.</li>\
+						<li>Right click to flag, left to enter.</li>\
+						<li>The number in the grid represents the ammount of bombs close to you vertically, horizontally and diagonally.</li>\
+						<li>By clicking on a 0 square, you get as a bonus the reveal of all the adjacent 0 squares.</li>\
+						<li>If you open a virus, your computer will be infected and a reset will be necessary.</li>\
+						<li>Every empty space will display the number of infected cells close by. Use it for your advantage.</li>\
+					</ul>\
+					<p>Good luck!</p>'
+		}
+		else{document.getElementById("instructions_div").innerHTML = '';
+		instruction_counter = 0;};		
+	};
+
+
+  var total_fractions = 2100; // Total seconds (60 seconds * 10 fractions)
+        var timerInterval = null;
+
+        function timer_text(secFractions) {
+            var minutes = Math.floor(secFractions / 600);
+            var seconds = Math.floor((secFractions % 600) / 10);
+
+            if (seconds < 10) {
+                seconds = "0" + seconds;
+            }
+
+            if (minutes < 10) {
+                minutes = "0" + minutes;
+            }
+
+            return minutes + ":" + seconds;
+        }
+
+        function dec_interval() {
+            total_fractions--;
+
+            document.getElementById("timer_div").innerHTML = timer_text(total_fractions);
+
+            if (total_fractions === 0) {
+                clearInterval(timerInterval);
+            }
+        }
+
+        function start_timer() {
+            document.getElementById("timer_div").innerHTML = timer_text(total_fractions);
+            timerInterval = setInterval(dec_interval, 100);
+        }
+
+
+        function stop_timer(){
+            clearInterval(timerInterval);
+        }
+//Source: Computer Practicum 2, Week 10 Starter Timer Exercise
+//game parameters such as len, height, and mine numbers
+
+    let n = 16;
+    let m = 16;
+    let mine_number = 30;
+
+    function generate_cell(x, y) {
+      document.getElementById('game_table').innerHTML += '<div id="'+x+','+y+'" class="game_cell" onmousedown="WhichButton(event, '+x+','+y+')" ></div>';
+    };
+
+
+    
+
+    function WhichButton(event, x, y) {
+    let code =  event.button;
+    if (code == 0) {cell_onClick(x, y);}
+    if (code == 2) {on_right_click(x, y);}
+    }
+
+   
+   
+    function start_game(){
+    	if (instruction_counter %2 == 1) {show_instructions();}
+
+    	placed_flags = 0;
+    	correctly_placed_flags = 0;
+    	arr_start();
+      start_timer();
+
+    	document.getElementById("lose_screen").innerHTML = ""
+		document.getElementById("win_screen").innerHTML = ""
+    	document.getElementById('game_table').innerHTML = ""
+
+
+
+
+    	for (var i = 0; i < n; i++) {
+      		for (var j = 0; j < m; j++) {
+        		generate_cell(i, j);
+      		};  
+    	};
+    }
+
+    
+
+    function Array_gen(n, m, x) {
+      // Create an empty array of size n by m
+      let array = new Array(n);
+      for (let i = 0; i < n; i++) {
+        array[i] = new Array(m).fill(0);
+      };
+
+      // Fill the array with '+' signs randomly
+      let count = 0;
+      while (count < x) {
+        let row = Math.floor(Math.random() * n);
+        let col = Math.floor(Math.random() * m);
+        let error_count = 0;
+
+        if (array[row][col] != '+') {
+          array[row][col] = '+';
+          try{
+            if (array[row-1][col-1] != '+') {
+              array[row-1][col-1] = (array[row-1][col-1] === ' ' ? 1 : array[row-1][col-1] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          try{
+            if (array[row-1][col] != '+') {
+              array[row-1][col] = (array[row-1][col] === ' ' ? 1 : array[row-1][col] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          try{
+            if (array[row-1][col+1] != '+') {
+              array[row-1][col+1] = (array[row-1][col+1] === ' ' ? 1 : array[row-1][col+1] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          try{
+            if (array[row][col-1] != '+') {
+              array[row][col-1] = (array[row][col-1] === ' ' ? 1 : array[row][col-1] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          try{
+            if (array[row][col+1] != '+') {
+              array[row][col+1] = (array[row][col+1] === ' ' ? 1 : array[row][col+1] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          try{
+            if (array[row+1][col-1] != '+') {
+              array[row+1][col-1] = (array[row+1][col-1] === ' ' ? 1 : array[row+1][col-1] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          try{
+            if (array[row+1][col] != '+') {
+              array[row+1][col] = (array[row+1][col] === ' ' ? 1 : array[row+1][col] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          try{
+            if (array[row+1][col+1] != '+') {
+              array[row+1][col+1] = (array[row+1][col+1] === ' ' ? 1 : array[row+1][col+1] + 1);
+            };
+          }
+          catch(err){error_count+=1;};
+          count += 1;
+        };
+      }
+      return array;
+    }
+    let game_array = Array_gen(n, m, mine_number);
+    function arr_start(){
+    	let game_array = Array_gen(n, m, mine_number);
+    }
+
+    function cell_onClick(x, y) {
+      let id = x + "," + y;
+      const cell = document.getElementById(id);
+      const value = game_array[x][y];
+      cell.textContent = value.toString();
+
+      if (value==0) {
+
+        try{
+          check_adiacent_cells(x, y-1);
+        }
+        catch(err){error_count+=1;}
+        try{
+          check_adiacent_cells(x-1, y);
+        }
+        catch(err){error_count+=1;}
+        try{
+          check_adiacent_cells(x+1, y);
+        }
+        catch(err){error_count+=1;}
+        try{
+          check_adiacent_cells(x, y+1);
+        }
+        catch(err){error_count+=1;}
+      }
+      if (value=='+') {
+
+      	lose();
+        
+      }
+
+      if (cell.innerHTML == "F") {
+        placed_flags -= 1;
+        if ((correctly_placed_flags == mine_number)&&(correctly_placed_flags==placed_flags)) {
+        you_won();
+      }
+
+      }
+
+    }
+
+    
+
+    let flags_total = mine_number;
+    let placed_flags = 0;
+    let correctly_placed_flags = 0;
+
+    function on_right_click(x, y){
+      let id = x + "," + y;
+      const cell = document.getElementById(id);
+      const value = game_array[x][y];
+      cell.textContent = "F";
+      if (value == "+") {
+        correctly_placed_flags+=1;
+        placed_flags +=1;
+      }
+      else{placed_flags +=1;}
+
+      if ((correctly_placed_flags == mine_number)&&(correctly_placed_flags==placed_flags)) {
+        you_won();
+      }
+
+    }
+
+	function lose(){
+    stop_timer();
+		document.getElementById('game_table').innerHTML = ""
+		document.getElementById("lose_screen").innerHTML = 
+'..######...#######..##.....##.########..##.....##.########.########.########.<br>\
+.##....##.##.....##.###...###.##.....##.##.....##....##....##.......##.....## \
+.##.......##.....##.####.####.##.....##.##.....##....##....##.......##.....## \
+.##.......##.....##.##.###.##.########..##.....##....##....######...########. \
+.##.......##.....##.##.....##.##........##.....##....##....##.......##...##.. \
+.##....##.##.....##.##.....##.##........##.....##....##....##.......##....##. \
+..######...#######..##.....##.##.........#######.....##....########.##.....##  \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.####.##....##.########.########..######..########.########.########.......... \
+..##..###...##.##.......##.......##....##....##....##.......##.....##......... \
+..##..####..##.##.......##.......##..........##....##.......##.....##......... \
+..##..##.##.##.######...######...##..........##....######...##.....##......... \
+..##..##..####.##.......##.......##..........##....##.......##.....##.........  \
+..##..##...###.##.......##.......##....##....##....##.......##.....##......... \
+.####.##....##.##.......########..######.....##....########.########.......... <br>\
+<button id="retry" onclick="location.reload();">retry</button>'
+
+	}
+
+    function you_won(){
+      stop_timer();
+      document.getElementById('game_table').innerHTML = ""
+		document.getElementById("win_screen").innerHTML = 
+'..######...#######..##.....##.########..##.....##.########.########.########. \
+.##....##.##.....##.###...###.##.....##.##.....##....##....##.......##.....## \
+.##.......##.....##.####.####.##.....##.##.....##....##....##.......##.....## \
+.##.......##.....##.##.###.##.########..##.....##....##....######...########. \
+.##.......##.....##.##.....##.##........##.....##....##....##.......##...##.. \
+.##....##.##.....##.##.....##.##........##.....##....##....##.......##....##. \
+..######...#######..##.....##.##.........#######.....##....########.##.....## \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.............................................................................. \
+.....######..##.......########....###....##....##.########.########.......... \
+....##....##.##.......##.........##.##...###...##.##.......##.....##......... \
+....##.......##.......##........##...##..####..##.##.......##.....##......... \
+....##.......##.......######...##.....##.##.##.##.######...##.....##......... \
+....##.......##.......##.......#########.##..####.##.......##.....##......... \
+....##....##.##.......##.......##.....##.##...###.##.......##.....##......... \
+.....######..########.########.##.....##.##....##.########.########.......... <br>\
+<button id="retry" onclick="location.reload();">play again</button>'
+    }
+
+    function check_adiacent_cells(x, y){
+      let id = x + "," + y;
+      const cell = document.getElementById(id);
+      const value = game_array[x][y];
+      if (value == 0) {cell.textContent = value.toString();}
+    }
+
+
+
+</script>
